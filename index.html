@@ -21,10 +21,10 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
-body{background:var(--paper);color:var(--ink);font:15px/1.5 var(--font);-webkit-font-smoothing:antialiased}
+body{background:var(--paper);color:var(--ink);font:16px/1.5 var(--font);-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit}
 h1,h2,h3{margin:0;font-weight:600;text-wrap:balance}
-h1{font-size:22px;letter-spacing:-.01em}
+h1{font-size:28px;letter-spacing:-.015em}
 h2{font-size:16px}
 h3{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
 a{color:inherit}
@@ -36,9 +36,24 @@ a{color:inherit}
 .word i{display:inline-block;width:6px;height:6px;background:var(--saffron);margin-left:1px}
 
 /* login */
-.auth{min-height:100vh;display:grid;place-items:center;padding:24px}
-.auth-box{width:min(380px,100%);background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:16px;box-shadow:0 20px 50px rgba(47,42,37,.08)}
-.auth-box p{margin:0;color:var(--muted);font-size:14px}
+.auth{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+.auth-brand{background:var(--ink);color:var(--paper);padding:56px 64px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.auth-brand::after{content:"";position:absolute;right:-120px;bottom:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(232,163,61,.28),rgba(232,163,61,0) 70%)}
+.auth-brand .word{font-size:28px;color:var(--paper)}
+.auth-brand h2{font-size:clamp(30px,3.2vw,48px);line-height:1.15;letter-spacing:-.02em;font-weight:600;max-width:15ch;position:relative;z-index:1}
+.auth-brand h2 em{font-style:normal;color:var(--saffron)}
+.auth-brand ul{list-style:none;margin:28px 0 0;padding:0;display:flex;flex-direction:column;gap:12px;color:var(--stone);font-size:17px;position:relative;z-index:1}
+.auth-brand li::before{content:"";display:inline-block;width:8px;height:8px;background:var(--saffron);margin-right:12px;vertical-align:middle}
+.auth-brand small{color:var(--stone);opacity:.75;font-size:13px;position:relative;z-index:1}
+.auth-side{display:grid;place-items:center;padding:40px 24px}
+.auth-box{width:min(460px,100%);display:flex;flex-direction:column;gap:20px}
+.auth-box h1{font-size:34px;letter-spacing:-.02em}
+.auth-box p{margin:4px 0 0;color:var(--muted);font-size:16px}
+.auth-box .fld input{padding:15px 16px;font-size:17px;border-radius:12px}
+.auth-box .fld label{font-size:14.5px}
+.auth-box .btn.pri{padding:15px 18px;font-size:16.5px;border-radius:12px}
+.auth-box .logo{display:none}
+@media (max-width:860px){.auth{grid-template-columns:1fr}.auth-brand{display:none}.auth-box .logo{display:flex}.auth-side{place-items:start center;padding-top:12vh}}
 .fld{display:flex;flex-direction:column;gap:5px;min-width:0}
 .fld label{font-size:13px;color:var(--muted);font-weight:500}
 .fld label b{color:var(--bad)}
@@ -62,7 +77,7 @@ a{color:inherit}
 
 /* shell */
 .top{position:sticky;top:0;z-index:20;background:rgba(247,242,238,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-.top-in{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:12px 20px}
+.top-in{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:12px 20px}
 .tabs{display:flex;gap:4px}
 .tabs a{padding:8px 14px;border-radius:9px;text-decoration:none;color:var(--muted);font-weight:500;font-size:14px}
 .tabs a.on{background:var(--ink);color:#fff}
@@ -74,7 +89,7 @@ a{color:inherit}
 .menu button,.menu a{background:none;border:0;text-align:left;padding:10px 12px;border-radius:8px;cursor:pointer;text-decoration:none;font-size:14px}
 .menu button:hover,.menu a:hover{background:var(--soft)}
 .menu .sub{font-size:12px;color:var(--muted);padding:6px 12px 8px}
-main{max-width:1080px;margin:0 auto;padding:22px 20px 110px}
+main{max-width:1400px;margin:0 auto;padding:28px 32px 110px}
 .bottom{display:none}
 .fab{display:none}
 
@@ -83,11 +98,11 @@ main{max-width:1080px;margin:0 auto;padding:22px 20px 110px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px}
 .pad{padding:16px 18px}
 .stack{display:flex;flex-direction:column;gap:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;align-items:start}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
 .stat{padding:12px 16px}
 .stat .k{font-size:12.5px;color:var(--muted)}
-.stat .v{font-size:22px;font-weight:600;letter-spacing:-.02em}
+.stat .v{font-size:28px;font-weight:600;letter-spacing:-.02em}
 .quick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .sec-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .empty{color:var(--muted);font-size:14px;padding:6px 0}
@@ -119,7 +134,7 @@ main{max-width:1080px;margin:0 auto;padding:22px 20px 110px}
 .tag{font-size:12px;padding:2px 8px;border-radius:6px;background:var(--soft)}
 .tag.ok{background:#E3F0E7;color:var(--good)}
 
-.board{display:grid;grid-template-columns:repeat(6,minmax(140px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+.board{display:grid;grid-template-columns:repeat(6,minmax(160px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
 .col{background:#F1EAE2;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
 .col-h{font-weight:600;font-size:13.5px;padding:2px 4px}
 .col-h span{display:block;font-weight:400;font-size:12px;color:var(--muted)}
@@ -131,7 +146,7 @@ main{max-width:1080px;margin:0 auto;padding:22px 20px 110px}
 
 /* sheet (record pages and forms) */
 .veil{position:fixed;inset:0;background:rgba(47,42,37,.35);z-index:40}
-.sheet{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--paper);z-index:41;display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(47,42,37,.2)}
+.sheet{position:fixed;top:0;right:0;bottom:0;width:min(640px,100%);background:var(--paper);z-index:41;display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(47,42,37,.2)}
 .sh-h{background:var(--card);border-bottom:1px solid var(--line);padding:14px 18px;display:flex;flex-direction:column;gap:10px}
 .sh-top{display:flex;gap:10px;align-items:flex-start}
 .sh-top h2{font-size:19px;flex:1;min-width:0;overflow-wrap:anywhere}
@@ -197,6 +212,13 @@ table.team select{padding:6px 8px;border:1px solid var(--line);border-radius:8px
 
 <!-- ============ LOGIN ============ -->
 <section class="auth" id="authView" hidden>
+  <div class="auth-brand">
+    <div class="logo"><svg width="28" height="36" viewBox="0 0 22 28" aria-hidden="true"><path d="M11 1C5.5 1 1 5.4 1 10.9 1 18.3 11 27 11 27s10-8.7 10-16.1C21 5.4 16.5 1 11 1z" fill="#E8A33D"/><rect x="7.5" y="7.5" width="7" height="7" fill="#2F2A25"/></svg><span class="word">plotmark<i></i></span></div>
+    <div><h2>Every client, viewing and deal <em>in one place.</em></h2>
+    <ul><li>Leads from the website arrive automatically</li><li>Viewings, tasks and follow-ups for today</li><li>Deals and commission at a glance</li></ul></div>
+    <small>Plotmark Real Estate L.L.C · Team access only</small>
+  </div>
+  <div class="auth-side">
   <form class="auth-box" id="authForm" novalidate>
     <div class="logo"><svg width="22" height="28" viewBox="0 0 22 28" aria-hidden="true"><path d="M11 1C5.5 1 1 5.4 1 10.9 1 18.3 11 27 11 27s10-8.7 10-16.1C21 5.4 16.5 1 11 1z" fill="#E8A33D"/><rect x="7.5" y="7.5" width="7" height="7" fill="#2F2A25"/></svg><span class="word">plotmark<i></i></span></div>
     <div><h1 id="authTitle">Sign in</h1><p id="authSub">Plotmark team access only.</p></div>
@@ -207,6 +229,7 @@ table.team select{padding:6px 8px;border:1px solid var(--line);border-radius:8px
     <button class="btn pri wide" id="authBtn" type="submit">Sign in</button>
     <button class="linkbtn" id="authAlt" type="button">Forgot password?</button>
   </form>
+  </div>
 </section>
 
 <!-- ============ APP ============ -->
