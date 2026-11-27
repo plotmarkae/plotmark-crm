@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#2F2A25">
+<title>Plotmark CRM</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 28'%3E%3Cpath d='M11 1C5.5 1 1 5.4 1 10.9 1 18.3 11 27 11 27s10-8.7 10-16.1C21 5.4 16.5 1 11 1z' fill='%23E8A33D'/%3E%3Crect x='7.5' y='7.5' width='7' height='7' fill='%232F2A25'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#2F2A25; --stone:#D2C5B3; --paper:#F7F2EE; --saffron:#E8A33D;
+  --card:#FFFDFB; --muted:#776C61; --line:#E7DED3; --soft:#F0E8DF;
+  --good:#3D7A55; --warn:#A86E12; --bad:#B0463A; --info:#4C6B88;
+  --font:'Sora',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:light;
+  /* layout: slim top bar + one column of cards; bottom tab bar on phones; records open as a side sheet */
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:var(--paper);color:var(--ink);font:15px/1.5 var(--font);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;font-weight:600;text-wrap:balance}
+h1{font-size:22px;letter-spacing:-.01em}
+h2{font-size:16px}
+h3{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+a{color:inherit}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--saffron);outline-offset:2px}
+[hidden]{display:none!important}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.word{font-weight:600;font-size:19px;letter-spacing:-.02em}
+.word i{display:inline-block;width:6px;height:6px;background:var(--saffron);margin-left:1px}
+
+/* login */
+.auth{min-height:100vh;display:grid;place-items:center;padding:24px}
+.auth-box{width:min(380px,100%);background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:16px;box-shadow:0 20px 50px rgba(47,42,37,.08)}
+.auth-box p{margin:0;color:var(--muted);font-size:14px}
+.fld{display:flex;flex-direction:column;gap:5px;min-width:0}
+.fld label{font-size:13px;color:var(--muted);font-weight:500}
+.fld label b{color:var(--bad)}
+.fld input,.fld select,.fld textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:15px}
+.fld textarea{min-height:80px;resize:vertical}
+.fld .hint{font-size:12px;color:var(--muted)}
+.err{color:var(--bad);font-size:13.5px;min-height:1em}
+.ok{color:var(--good);font-size:13.5px}
+.linkbtn{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:13.5px;align-self:flex-start}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-weight:500;font-size:14px;white-space:nowrap;text-decoration:none}
+.btn:hover{border-color:var(--stone)}
+.btn.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.acc{background:var(--saffron);border-color:var(--saffron)}
+.btn.sm{padding:6px 11px;font-size:13px;border-radius:8px}
+.btn.wide{width:100%}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.5;cursor:default}
+
+/* shell */
+.top{position:sticky;top:0;z-index:20;background:rgba(247,242,238,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:12px 20px}
+.tabs{display:flex;gap:4px}
+.tabs a{padding:8px 14px;border-radius:9px;text-decoration:none;color:var(--muted);font-weight:500;font-size:14px}
+.tabs a.on{background:var(--ink);color:#fff}
+.tabs a:hover:not(.on){background:var(--soft);color:var(--ink)}
+.who{margin-left:auto;position:relative}
+.who>button{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:5px 12px 5px 5px;cursor:pointer;font-size:13.5px}
+.av{width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:600;flex:none}
+.menu{position:absolute;right:0;top:calc(100% + 6px);background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(47,42,37,.14);min-width:200px;padding:6px;display:flex;flex-direction:column}
+.menu button,.menu a{background:none;border:0;text-align:left;padding:10px 12px;border-radius:8px;cursor:pointer;text-decoration:none;font-size:14px}
+.menu button:hover,.menu a:hover{background:var(--soft)}
+.menu .sub{font-size:12px;color:var(--muted);padding:6px 12px 8px}
+main{max-width:1080px;margin:0 auto;padding:22px 20px 110px}
+.bottom{display:none}
+.fab{display:none}
+
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.head .sub{color:var(--muted);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px}
+.pad{padding:16px 18px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.stat{padding:12px 16px}
+.stat .k{font-size:12.5px;color:var(--muted)}
+.stat .v{font-size:22px;font-weight:600;letter-spacing:-.02em}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.sec-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.empty{color:var(--muted);font-size:14px;padding:6px 0}
+
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);cursor:pointer;min-width:0}
+.row:first-child{border-top:0}
+.row .main{flex:1;min-width:0}
+.row .t{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .s{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .r{text-align:right;flex:none;font-size:13px}
+.row:hover .t{text-decoration:underline}
+.date{flex:none;width:52px;text-align:center;background:var(--soft);border-radius:10px;padding:4px 0;font-size:11px;line-height:1.2}
+.date b{display:block;font-size:17px}
+.check{width:22px;height:22px;accent-color:var(--ink);flex:none;cursor:pointer}
+.row.done .t{text-decoration:line-through;color:var(--muted)}
+.late{color:var(--bad);font-weight:600}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.filters input{flex:1;min-width:200px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.chipset{display:flex;gap:6px;flex-wrap:wrap}
+.chipset button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 13px;font-size:13px;cursor:pointer}
+.chipset button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:500;background:var(--soft);white-space:nowrap}
+.pill.good{background:#E3F0E7;color:var(--good)}
+.pill.warn{background:#FBEFD9;color:var(--warn)}
+.pill.bad{background:#F7E2DF;color:var(--bad)}
+.pill.info{background:#E3EAF1;color:var(--info)}
+.tag{font-size:12px;padding:2px 8px;border-radius:6px;background:var(--soft)}
+.tag.ok{background:#E3F0E7;color:var(--good)}
+
+.board{display:grid;grid-template-columns:repeat(6,minmax(140px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+.col{background:#F1EAE2;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.col-h{font-weight:600;font-size:13.5px;padding:2px 4px}
+.col-h span{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.deal{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;display:flex;flex-direction:column;gap:3px}
+.deal:hover{border-color:var(--stone)}
+.deal .t{font-weight:500;font-size:13.5px}
+.deal .s{font-size:12.5px;color:var(--muted)}
+.deal .c{color:var(--good);font-weight:600;font-size:13px}
+
+/* sheet (record pages and forms) */
+.veil{position:fixed;inset:0;background:rgba(47,42,37,.35);z-index:40}
+.sheet{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--paper);z-index:41;display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(47,42,37,.2)}
+.sh-h{background:var(--card);border-bottom:1px solid var(--line);padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.sh-top{display:flex;gap:10px;align-items:flex-start}
+.sh-top h2{font-size:19px;flex:1;min-width:0;overflow-wrap:anywhere}
+.sh-b{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:18px}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.contact-btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px}
+.contact-btns .btn{padding:10px 6px}
+.dl{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:0}
+.dl dt{font-size:12px;color:var(--muted)}
+.dl dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+.steps{display:flex;flex-wrap:wrap;gap:5px}
+.steps button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 11px;font-size:13px;cursor:pointer}
+.steps button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.steps button.lost.on{background:var(--bad);border-color:var(--bad)}
+.note{display:flex;flex-direction:column;gap:8px}
+.note textarea{width:100%;min-height:70px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;resize:vertical}
+.ev{display:grid;grid-template-columns:82px 1fr;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.ev:first-child{border-top:0}
+.ev .k{font-size:12px;color:var(--muted)}
+.ev .k b{display:block;color:var(--ink);font-weight:600}
+.calc{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px}
+.calc .tot{font-weight:600;border-top:1px solid var(--line);padding-top:6px}
+form.f{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+form.f .wide{grid-column:1/-1}
+details.more{grid-column:1/-1;border-top:1px solid var(--line);padding-top:10px}
+details.more summary{cursor:pointer;color:var(--muted);font-size:14px;font-weight:500;padding:4px 0}
+details.more .in{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+.boxes{display:flex;flex-wrap:wrap;gap:6px}
+.boxes label{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;font-size:13.5px;color:var(--ink);cursor:pointer}
+.boxes input{width:auto}
+.ckline{flex-direction:row!important;align-items:center;gap:8px!important}
+.ckline input{width:20px!important;height:20px}
+.f-foot{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;position:sticky;bottom:-18px;background:var(--paper);padding:12px 0 4px}
+.confirm{display:flex;gap:8px;align-items:center;color:var(--bad);font-size:13.5px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;z-index:60;max-width:92vw;text-align:center}
+.loading{padding:60px 0;text-align:center;color:var(--muted)}
+table.team{width:100%;border-collapse:collapse;font-size:14px}
+table.team td,table.team th{padding:10px 8px;border-top:1px solid var(--line);text-align:left;vertical-align:middle}
+table.team th{border-top:0;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+table.team select{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.howto{font-size:14px;color:var(--muted)}
+.howto ol{margin:6px 0 0;padding-left:20px}
+
+@media (max-width:760px){
+  .tabs{display:none}
+  .top-in{padding:10px 16px}
+  main{padding:16px 14px 120px}
+  .bottom{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+  .bottom a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;text-decoration:none;font-size:11.5px;color:var(--muted);border-radius:10px}
+  .bottom a.on{color:var(--ink);font-weight:600;background:var(--soft)}
+  .bottom svg{width:22px;height:22px}
+  .fab{display:grid;place-items:center;position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;background:var(--saffron);border:0;box-shadow:0 8px 20px rgba(47,42,37,.25);z-index:31;font-size:28px;cursor:pointer}
+  .quick{display:none}
+  form.f,details.more .in{grid-template-columns:1fr}
+  .board{grid-template-columns:1fr}
+  #whoName{display:none}
+  .who>button{padding:4px}
+}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:slide .2s ease}@keyframes slide{from{transform:translateX(30px);opacity:.6}}}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section class="auth" id="authView" hidden>
+  <form class="auth-box" id="authForm" novalidate>
+    <div class="logo"><svg width="22" height="28" viewBox="0 0 22 28" aria-hidden="true"><path d="M11 1C5.5 1 1 5.4 1 10.9 1 18.3 11 27 11 27s10-8.7 10-16.1C21 5.4 16.5 1 11 1z" fill="#E8A33D"/><rect x="7.5" y="7.5" width="7" height="7" fill="#2F2A25"/></svg><span class="word">plotmark<i></i></span></div>
+    <div><h1 id="authTitle">Sign in</h1><p id="authSub">Plotmark team access only.</p></div>
+    <div class="fld" id="fEmail"><label for="aEmail">Email</label><input id="aEmail" type="email" autocomplete="username" placeholder="name@plotmark.ae"></div>
+    <div class="fld" id="fPass"><label for="aPass">Password</label><input id="aPass" type="password" autocomplete="current-password"></div>
+    <div class="fld" id="fPass2" hidden><label for="aPass2">Repeat new password</label><input id="aPass2" type="password" autocomplete="new-password"></div>
+    <div class="err" id="authErr" role="alert"></div>
+    <button class="btn pri wide" id="authBtn" type="submit">Sign in</button>
+    <button class="linkbtn" id="authAlt" type="button">Forgot password?</button>
+  </form>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="appView" hidden>
+  <header class="top"><div class="top-in">
+    <a class="logo" href="#today"><svg width="20" height="26" viewBox="0 0 22 28" aria-hidden="true"><path d="M11 1C5.5 1 1 5.4 1 10.9 1 18.3 11 27 11 27s10-8.7 10-16.1C21 5.4 16.5 1 11 1z" fill="#E8A33D"/><rect x="7.5" y="7.5" width="7" height="7" fill="#2F2A25"/></svg><span class="word">plotmark<i></i></span></a>
+    <nav class="tabs" id="tabs"></nav>
+    <div class="who"><button id="whoBtn" aria-haspopup="true" aria-expanded="false"><span class="av" id="whoAv"></span><span id="whoName"></span></button>
+      <div class="menu" id="whoMenu" hidden></div></div>
+  </div></header>
+  <main id="view"><div class="loading">Loading your CRM…</div></main>
+  <nav class="bottom" id="bottom"></nav>
+  <button class="fab" id="fab" aria-label="Add">+</button>
+</div>
+
+<div class="veil" id="veil" hidden></div>
+<aside class="sheet" id="sheet" hidden role="dialog" aria-modal="true"></aside>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script src="supabase.js"></script>
+<script>
+/* ===================== CONFIG ===================== */
+const SUPABASE_URL='https://xkyxwfdgnkvmmwanegax.supabase.co';
+const SUPABASE_KEY='sb_publishable_haAnDdVKW9zlIZZa32TQHw_lWCAjMmF'; // public key: safe in the browser, data is protected by the database rules
+
+/* ===================== LISTS ===================== */
+const COMMUNITIES=['Dubai Marina','Palm Jumeirah','JVC','MBR City','Downtown Dubai','Business Bay','Dubai Creek Harbour','Dubai South','Dubai Hills Estate','JLT','Other Dubai','Egypt'];
+const L={
+  purpose:['Buy','Rent','Off-plan','Sell','Let'],
+  source:['Website','Property Finder','Bayut','Dubizzle','Referral','Developer','Social media','Call / walk-in','Other'],
+  status:['New','Contacted','Qualified','Viewing','Negotiating','Client','Nurture','Lost'],
+  kyc:['Not started','In progress','Done'],
+  beds:['Studio','1','2','3','4','5+'],
+  ptype:['Apartment','Villa','Townhouse','Penthouse','Duplex','Plot','Office','Retail'],
+  ppurpose:['Sale','Rent','Off-plan'],
+  pstatus:['Draft','Live','Under offer','Sold','Rented','Withdrawn'],
+  dtype:['Sale','Rental','Off-plan'],
+  stages:['New','Viewing','Offer','Agreement','Closing','Won','Lost'],
+  vstatus:['Scheduled','Done','Cancelled','No-show'],
+};
+const STAGE_HINT={New:'Interested',Viewing:'Seeing properties',Offer:'Offer made',Agreement:'Form F / MOU or tenancy contract',Closing:'DLD transfer or Ejari',Won:'Closed',Lost:'Did not go ahead'};
+const DEF_COMM={Sale:2,Rental:5,'Off-plan':5};
+const TABLES=['profiles','contacts','properties','deals','viewings','tasks','activities'];
+const NAME={contacts:'lead',properties:'property',deals:'deal',viewings:'viewing',tasks:'task'};
+
+/* Forms: "main" fields show first; the rest sit under "More details" */
+const FORMS={
+  contacts:{main:[
+    {k:'name',l:'Full name',t:'text',req:1,wide:1},
+    {k:'phone',l:'Phone',t:'tel',ph:'+971 5x xxx xxxx'},
+    {k:'email',l:'Email',t:'email'},
+    {k:'purpose',l:'Looking to',t:'select',o:L.purpose,req:1},
+    {k:'budget',l:'Budget or asking price (AED)',t:'number'},
+    {k:'next_step',l:'Next follow-up',t:'date'},
+    {k:'source',l:'Where they came from',t:'select',o:L.source,def:'Call / walk-in'},
+    {k:'notes',l:'Notes',t:'textarea',wide:1},
+  ],more:[
+    {k:'beds',l:'Bedrooms',t:'select',o:['Any',...L.beds],def:'Any'},
+    {k:'status',l:'Status',t:'select',o:L.status,def:'New'},
+    {k:'communities',l:'Communities',t:'multi',o:COMMUNITIES,wide:1},
+    {k:'broker',l:'Broker',t:'broker'},
+    {k:'kyc',l:'KYC / AML check',t:'select',o:L.kyc,def:'Not started'},
+    {k:'nationality',l:'Nationality',t:'text'},
+  ]},
+  properties:{main:[
+    {k:'title',l:'Listing title',t:'text',req:1,wide:1,ph:'2BR with marina view, Marina Gate 1'},
+    {k:'purpose',l:'Listing for',t:'select',o:L.ppurpose,req:1},
+    {k:'community',l:'Community',t:'select',o:COMMUNITIES,req:1},
+    {k:'beds',l:'Bedrooms',t:'select',o:L.beds,def:'1'},
+    {k:'price',l:'Price (AED, yearly for rent)',t:'number',req:1},
+    {k:'status',l:'Status',t:'select',o:L.pstatus,def:'Draft'},
+    {k:'owner_id',l:'Owner / landlord',t:'ref',ref:'contacts'},
+  ],more:[
+    {k:'permit',l:'Trakheesi permit no.',t:'text',hint:'Needed before a ready listing goes Live.'},
+    {k:'permit_expiry',l:'Permit expiry',t:'date'},
+    {k:'form_a',l:'Form A signed with the owner',t:'check',wide:1},
+    {k:'ref',l:'Reference',t:'text',ph:'PM-S-0001'},
+    {k:'building',l:'Building / project',t:'text'},
+    {k:'type',l:'Type',t:'select',o:L.ptype,def:'Apartment'},
+    {k:'size_sqft',l:'Size (sq ft)',t:'number'},
+    {k:'developer',l:'Developer (off-plan)',t:'text'},
+    {k:'broker',l:'Listing broker',t:'broker'},
+    {k:'notes',l:'Notes',t:'textarea',wide:1},
+  ]},
+  deals:{main:[
+    {k:'title',l:'Deal name',t:'text',req:1,wide:1},
+    {k:'type',l:'Deal type',t:'select',o:L.dtype,req:1},
+    {k:'stage',l:'Stage',t:'select',o:L.stages,def:'New'},
+    {k:'contact_id',l:'Client',t:'ref',ref:'contacts',req:1},
+    {k:'property_id',l:'Property',t:'ref',ref:'properties'},
+    {k:'value',l:'Deal value (AED)',t:'number',req:1,hint:'Price, or yearly rent.'},
+    {k:'expected_close',l:'Expected close',t:'date'},
+  ],more:[
+    {k:'comm_pct',l:'Commission %',t:'number',step:'0.1'},
+    {k:'split_pct',l:'Other agency’s share %',t:'number',hint:'If you split with another agency (Form I).'},
+    {k:'broker',l:'Broker',t:'broker'},
+    {k:'notes',l:'Notes',t:'textarea',wide:1},
+  ]},
+  viewings:{main:[
+    {k:'starts_at',l:'Date and time',t:'datetime-local',req:1,wide:1},
+    {k:'contact_id',l:'Client',t:'ref',ref:'contacts',req:1},
+    {k:'property_id',l:'Property',t:'ref',ref:'properties',req:1},
+  ],more:[
+    {k:'broker',l:'Broker',t:'broker'},
+    {k:'status',l:'Status',t:'select',o:L.vstatus,def:'Scheduled'},
+    {k:'feedback',l:'Client feedback',t:'textarea',wide:1},
+  ]},
+  tasks:{main:[
+    {k:'title',l:'What needs doing?',t:'text',req:1,wide:1},
+    {k:'due',l:'Due',t:'date',req:1},
+    {k:'contact_id',l:'Client',t:'ref',ref:'contacts'},
+  ],more:[
+    {k:'broker',l:'Assigned to',t:'broker'},
+    {k:'deal_id',l:'Deal',t:'ref',ref:'deals'},
+    {k:'notes',l:'Notes',t:'textarea',wide:1},
+  ]},
+};
+
+/* ===================== STATE ===================== */
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const D={};TABLES.forEach(t=>D[t]=[]);
+let me=null,session=null,view='today',sheet=null,loadedAt=0;
+const UI={leads:{q:'',f:'active'},props:{q:'',f:'active'},deals:{f:'',mine:false}};
+const LINK_TYPE=(location.hash.match(/type=(\w+)/)||[])[1]||'';   // invite / recovery links
+
+/* ===================== HELPERS ===================== */
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>ymd(new Date());
+const addDays=n=>{const d=new Date();d.setDate(d.getDate()+n);return ymd(d)};
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fDate=s=>{if(!s)return '';const [y,m,d]=String(s).slice(0,10).split('-');return +d+' '+MON[+m-1]+(+y!==new Date().getFullYear()?' '+y:'')};
+const fTime=iso=>{const d=new Date(iso);return pad(d.getHours())+':'+pad(d.getMinutes())};
+const localDay=iso=>ymd(new Date(iso));
+const toLocalInput=iso=>{const d=new Date(iso);return ymd(d)+'T'+pad(d.getHours())+':'+pad(d.getMinutes())};
+const aed=(n,short)=>{n=+n||0;if(short&&n>=1e6)return 'AED '+(n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';if(short&&n>=1e4)return 'AED '+Math.round(n/1e3)+'K';return 'AED '+Math.round(n).toLocaleString('en-US')};
+const ago=iso=>{if(!iso)return '';const d=Math.floor((Date.now()-new Date(iso))/864e5);return d<=0?'Today':d===1?'Yesterday':d<30?d+' days ago':fDate(iso)};
+const byId=(t,id)=>id?D[t].find(r=>r.id===id):null;
+const cName=id=>byId('contacts',id)?.name||'';
+const pName=id=>byId('properties',id)?.title||'';
+const person=id=>{const p=byId('profiles',id);return p?(p.full_name||p.email||'Teammate'):''};
+const initials=s=>(s||'?').split(/[\s@.]+/).filter(Boolean).slice(0,2).map(x=>x[0].toUpperCase()).join('');
+const isAdmin=()=>me&&me.role==='admin';
+const openLead=c=>!['Client','Lost'].includes(c.status);
+function comm(d){const v=+d.value||0,p=d.comm_pct!=null?+d.comm_pct:(DEF_COMM[d.type]||2),s=+d.split_pct||0,g=v*p/100;return {pct:p,gross:g,share:g*s/100,net:g*(1-s/100)}}
+const CLS={New:'info',Qualified:'warn',Viewing:'warn',Negotiating:'warn',Client:'good',Lost:'bad',Live:'good','Under offer':'warn',Sold:'info',Rented:'info',Withdrawn:'bad',Scheduled:'info',Done:'good',Cancelled:'bad','No-show':'bad','Not started':'bad','In progress':'warn',Offer:'warn',Agreement:'warn',Closing:'warn',Won:'good'};
+const pill=(t,c)=>`<span class="pill ${c??CLS[t]??''}">${esc(t)}</span>`;
+function permit(p){if(p.purpose==='Off-plan'&&!p.permit)return null;if(!p.permit)return {c:'bad',t:'No permit'};if(p.permit_expiry&&p.permit_expiry<today())return {c:'bad',t:'Permit expired'};if(p.permit_expiry&&p.permit_expiry<=addDays(30))return {c:'warn',t:'Permit ends '+fDate(p.permit_expiry)};return {c:'good',t:'Permit OK'}}
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,3200)}
+function friendly(e){const m=(e&&(e.message||e.error_description))||'';
+  if(/live_needs_permit/.test(m))return 'Add the Trakheesi permit number before setting a ready listing to Live.';
+  if(/row-level security|permission denied/i.test(m))return isAdmin()?'That change was blocked by the security rules.':'Only the admin can do that.';
+  if(/Failed to fetch|NetworkError/i.test(m))return 'No connection. Check your internet and try again.';
+  if(/JWT|session/i.test(m))return 'Your session ended. Please sign in again.';
+  return m||'Something went wrong. Please try again.'}
+const tel=p=>String(p||'').replace(/[^\d+]/g,'');
+
+/* ===================== DATA ===================== */
+async function loadAll(){
+  const q=t=>{let x=sb.from(t).select('*');if(t==='activities')x=x.order('created_at',{ascending:false}).limit(3000);return x};
+  const res=await Promise.all(TABLES.map(q));
+  const bad=res.find(r=>r.error);if(bad)throw bad.error;
+  TABLES.forEach((t,i)=>D[t]=res[i].data||[]);
+  me=D.profiles.find(p=>p.id===session.user.id)||null;loadedAt=Date.now();
+}
+async function save(t,id,obj){
+  const r=id?await sb.from(t).update(obj).eq('id',id).select().single():await sb.from(t).insert(obj).select().single();
+  if(r.error)throw r.error;
+  const i=D[t].findIndex(x=>x.id===r.data.id);if(i>=0)D[t][i]=r.data;else D[t].unshift(r.data);
+  return r.data;
+}
+async function remove(t,id){const r=await sb.from(t).delete().eq('id',id);if(r.error)throw r.error;D[t]=D[t].filter(x=>x.id!==id)}
+async function refresh(quiet){try{await loadAll();render()}catch(e){if(!quiet)toast(friendly(e))}}
+
+/* ===================== AUTH ===================== */
+let authMode='signin';
+function showAuth(mode){
+  authMode=mode;$('#appView').hidden=true;$('#authView').hidden=false;$('#authErr').textContent='';$('#authErr').className='err';
+  const set=(t,s,b,alt)=>{$('#authTitle').textContent=t;$('#authSub').textContent=s;$('#authBtn').textContent=b;$('#authAlt').textContent=alt};
+  $('#fEmail').hidden=mode==='newpass';$('#fPass').hidden=mode==='reset';$('#fPass2').hidden=mode!=='newpass';
+  $('#aPass').autocomplete=mode==='newpass'?'new-password':'current-password';
+  $('#fPass label').textContent=mode==='newpass'?'New password (at least 8 characters)':'Password';
+  if(mode==='signin')set('Sign in','Plotmark team access only.','Sign in','Forgot password?');
+  if(mode==='reset')set('Reset password','We’ll email you a link to set a new password.','Send reset link','Back to sign in');
+  if(mode==='newpass'){set('Set your password','Choose a password for your Plotmark CRM account.','Save password','');$('#fPass').hidden=false}
+  $('#authAlt').hidden=mode==='newpass';
+}
+$('#authAlt').onclick=()=>showAuth(authMode==='signin'?'reset':'signin');
+$('#authForm').onsubmit=async e=>{
+  e.preventDefault();const btn=$('#authBtn'),err=$('#authErr');err.className='err';err.textContent='';
+  const email=$('#aEmail').value.trim(),pass=$('#aPass').value,pass2=$('#aPass2').value;
+  btn.disabled=true;
+  try{
+    if(authMode==='signin'){
+      if(!email||!pass)throw {message:'Enter your email and password.'};
+      const {error}=await sb.auth.signInWithPassword({email,password:pass});
+      if(error)throw {message:/invalid/i.test(error.message)?'Email or password is not right.':error.message};
+    }else if(authMode==='reset'){
+      if(!email)throw {message:'Enter your email.'};
+      const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+      if(error)throw error;err.className='ok';err.textContent='If that email has an account, a reset link is on its way.';
+    }else{
+      if(pass.length<8)throw {message:'Use at least 8 characters.'};
+      if(pass!==pass2)throw {message:'The two passwords don’t match.'};
+      const {error}=await sb.auth.updateUser({password:pass});if(error)throw error;
+      history.replaceState(null,'',location.pathname+'#today');toast('Password saved');await enter();
+    }
+  }catch(x){err.textContent=x.message||'Something went wrong.'}
+  btn.disabled=false;
+};
+let entering=false;
+async function enter(){
+  if(entering)return;entering=true;authMode='signin';
+  $('#authView').hidden=true;$('#appView').hidden=false;$('#view').innerHTML='<div class="loading">Loading your CRM…</div>';
+  try{await enterInner()}finally{entering=false}
+}
+async function enterInner(){
+  try{await loadAll()}catch(e){$('#view').innerHTML=`<div class="card pad">${esc(friendly(e))} <button class="btn sm" onclick="location.reload()">Try again</button></div>`;return}
+  if(!me||!me.active){$('#view').innerHTML=`<div class="card pad stack"><h2>Your account isn’t active</h2><p class="howto">Ask the Plotmark admin to activate your access.</p><button class="btn" data-a="signout">Sign out</button></div>`;return}
+  route();
+}
+sb.auth.onAuthStateChange((ev,s)=>{
+  session=s;
+  if(ev==='PASSWORD_RECOVERY'){showAuth('newpass');return}
+  if(ev==='SIGNED_OUT'){D.profiles=[];me=null;closeSheet();showAuth('signin')}
+  if(ev==='SIGNED_IN'&&!me&&!entering&&authMode!=='newpass'){if(LINK_TYPE==='invite'||LINK_TYPE==='recovery')showAuth('newpass');else enter()}
+});
+(async()=>{const {data}=await sb.auth.getSession();session=data.session;
+  if(!session){showAuth('signin');return}
+  if(LINK_TYPE==='invite'||LINK_TYPE==='recovery')showAuth('newpass');else enter();
+})();
+
+/* ===================== ROUTING & SHELL ===================== */
+const TABS=[{id:'today',n:'Today',i:'<path d="M3 10h18M7 3v4M17 3v4"/><rect x="3" y="5" width="18" height="16" rx="2"/>'},
+  {id:'leads',n:'Leads',i:'<circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7M17 4a4 4 0 0 1 0 8M22 21c0-3-2-5.5-4.5-6.5"/>'},
+  {id:'properties',n:'Properties',i:'<path d="M3 21V9l9-6 9 6v12"/><path d="M9 21v-7h6v7"/>'},
+  {id:'deals',n:'Deals',i:'<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>'}];
+function route(){const h=location.hash.slice(1);view=[...TABS.map(t=>t.id),'team'].includes(h)?h:'today';if(view==='team'&&!isAdmin())view='today';render()}
+window.addEventListener('hashchange',()=>{if(!$('#appView').hidden&&!/access_token|type=/.test(location.hash))route()});
+function render(){
+  if(!me)return;
+  $('#tabs').innerHTML=TABS.map(t=>`<a href="#${t.id}" class="${view===t.id?'on':''}">${t.n}</a>`).join('');
+  $('#bottom').innerHTML=TABS.map(t=>`<a href="#${t.id}" class="${view===t.id?'on':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${t.i}</svg>${t.n}</a>`).join('');
+  $('#whoAv').textContent=initials(me.full_name||me.email);$('#whoName').textContent=me.full_name||me.email;
+  $('#whoMenu').innerHTML=`<div class="sub">${esc(me.email||'')} · ${isAdmin()?'Admin':'Broker'}</div><button data-a="myname">Change my name</button>${isAdmin()?'<a href="#team">Team & access</a>':''}<button data-a="refresh">Refresh data</button><button data-a="signout">Sign out</button>`;
+  $('#view').innerHTML=({today:vToday,leads:vLeads,properties:vProps,deals:vDeals,team:vTeam})[view]();
+  if(sheet)drawSheet();
+}
+
+/* ===================== TODAY ===================== */
+function vToday(){
+  const t=today(),h=new Date().getHours(),first=(me.full_name||'').split(' ')[0];
+  const tasks=D.tasks.filter(x=>!x.done&&x.due&&x.due<=t).sort((a,b)=>a.due.localeCompare(b.due));
+  const follow=D.contacts.filter(c=>openLead(c)&&c.next_step&&c.next_step<=t);
+  const fresh=D.contacts.filter(c=>c.status==='New').sort((a,b)=>b.created_at.localeCompare(a.created_at));
+  const vw=D.viewings.filter(v=>v.status==='Scheduled'&&new Date(v.starts_at)>=new Date(Date.now()-3*36e5)&&localDay(v.starts_at)<=addDays(7)).sort((a,b)=>a.starts_at.localeCompare(b.starts_at));
+  const open=D.deals.filter(d=>!['Won','Lost'].includes(d.stage));
+  const yr=String(new Date().getFullYear());
+  const won=D.deals.filter(d=>d.stage==='Won'&&(d.closed_at||'').startsWith(yr));
+  const issues=[];
+  D.properties.forEach(p=>{const s=permit(p);if(p.status==='Live'&&s&&s.c!=='good')issues.push(['properties',p.id,p.title,s.t,s.c]);if(['Live','Under offer'].includes(p.status)&&p.purpose!=='Off-plan'&&!p.form_a)issues.push(['properties',p.id,p.title,'Form A not signed','warn'])});
+  D.deals.forEach(d=>{if(['Agreement','Closing','Won'].includes(d.stage)){const c=byId('contacts',d.contact_id);if(c&&c.kyc!=='Done')issues.push(['contacts',c.id,c.name,'KYC not done','bad'])}});
+  return `<div class="head"><div><h1>Good ${h<12?'morning':h<17?'afternoon':'evening'}${first?', '+esc(first):''}</h1><div class="sub">${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</div></div></div>
+  <div class="quick"><button class="btn pri" data-a="new" data-t="contacts">+ Add lead</button><button class="btn" data-a="new" data-t="viewings">Book viewing</button><button class="btn" data-a="new" data-t="tasks">Add task</button><button class="btn" data-a="new" data-t="properties">Add property</button></div>
+  <div class="stats">
+    <div class="card stat"><div class="k">New leads waiting</div><div class="v num">${fresh.length}</div></div>
+    <div class="card stat"><div class="k">Open deals</div><div class="v num">${open.length}</div></div>
+    <div class="card stat"><div class="k">Expected commission</div><div class="v num">${aed(open.reduce((a,d)=>a+comm(d).net,0),1)}</div></div>
+    <div class="card stat"><div class="k">Won in ${yr}</div><div class="v num">${aed(won.reduce((a,d)=>a+comm(d).net,0),1)}</div></div>
+  </div>
+  <div class="grid">
+   <div class="card pad"><div class="sec-h"><h2>To do</h2></div>${tasks.length||follow.length?
+     tasks.map(taskRow).join('')+follow.map(c=>`<div class="row" data-a="open" data-t="contacts" data-id="${c.id}"><span class="check" aria-hidden="true">↻</span><div class="main"><div class="t">Follow up ${esc(c.name)}</div><div class="s">${esc(c.purpose||'')} · ${esc(c.status)}</div></div><div class="r ${c.next_step<t?'late':''}">${c.next_step<t?fDate(c.next_step):'Today'}</div></div>`).join('')
+     :'<div class="empty">Nothing due. Nice.</div>'}</div>
+   <div class="card pad"><div class="sec-h"><h2>Viewings</h2><span class="s howto">Next 7 days</span></div>${vw.length?vw.map(viewRow).join(''):'<div class="empty">No viewings booked.</div>'}</div>
+   <div class="card pad"><div class="sec-h"><h2>New leads</h2><a class="btn sm ghost" href="#leads">All leads</a></div>${fresh.length?fresh.slice(0,8).map(leadRow).join(''):'<div class="empty">No new leads. Website enquiries will appear here automatically.</div>'}</div>
+   ${issues.length?`<div class="card pad"><div class="sec-h"><h2>Needs attention</h2><span class="howto">RERA / AML</span></div>${issues.slice(0,8).map(i=>`<div class="row" data-a="open" data-t="${i[0]}" data-id="${i[1]}"><div class="main"><div class="t">${esc(i[2])}</div></div><div class="r">${pill(i[3],i[4])}</div></div>`).join('')}</div>`:''}
+  </div>`;
+}
+function taskRow(x){const late=!x.done&&x.due&&x.due<today();
+  return `<div class="row ${x.done?'done':''}"><input type="checkbox" class="check" aria-label="Done" data-a="tick" data-id="${x.id}" ${x.done?'checked':''}><div class="main" data-a="open" data-t="tasks" data-id="${x.id}"><div class="t">${esc(x.title)}</div><div class="s">${esc([cName(x.contact_id),person(x.broker)].filter(Boolean).join(' · '))}</div></div><div class="r ${late?'late':''}">${x.due?(x.due===today()?'Today':fDate(x.due)):''}</div></div>`}
+function viewRow(v){const d=new Date(v.starts_at);
+  return `<div class="row" data-a="open" data-t="viewings" data-id="${v.id}"><div class="date">${MON[d.getMonth()]}<b class="num">${d.getDate()}</b>${fTime(v.starts_at)}</div><div class="main"><div class="t">${esc(cName(v.contact_id)||'Client')}</div><div class="s">${esc(pName(v.property_id))}</div></div><div class="r">${pill(v.status)}</div></div>`}
+function leadRow(c){return `<div class="row" data-a="open" data-t="contacts" data-id="${c.id}"><span class="av" style="background:var(--stone);color:var(--ink)">${esc(initials(c.name))}</span><div class="main"><div class="t">${esc(c.name)}</div><div class="s">${esc([c.purpose,c.budget?aed(c.budget,1):'',c.source].filter(Boolean).join(' · '))}</div></div><div class="r">${pill(c.status)}<div class="s howto">${esc(ago(c.last_contact||c.created_at))}</div></div></div>`}
+
+/* ===================== LEADS ===================== */
+function vLeads(){
+  const f=UI.leads,q=f.q.toLowerCase();
+  const rows=D.contacts.filter(c=>(f.f==='active'?openLead(c):f.f==='new'?c.status==='New':f.f==='clients'?c.status==='Client':f.f==='mine'?c.broker===me.id:true)
+    &&(!q||[c.name,c.phone,c.email,(c.communities||[]).join(' ')].join(' ').toLowerCase().includes(q))).sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));
+  return `<div class="head"><h1>Leads</h1><button class="btn pri" data-a="new" data-t="contacts">+ Add lead</button></div>
+  <div class="filters"><input id="qLeads" type="search" placeholder="Search name, phone or email" value="${esc(f.q)}" aria-label="Search leads">
+  <div class="chipset">${[['active','Active'],['new','New'],['mine','Mine'],['clients','Clients'],['all','All']].map(([k,n])=>`<button data-a="lf" data-v="${k}" class="${f.f===k?'on':''}">${n}</button>`).join('')}</div></div>
+  <div class="card pad" id="leadList">${rows.length?rows.map(leadRow).join(''):`<div class="empty">${D.contacts.length?'No leads match.':'No leads yet. Tap “Add lead” to add your first one.'}</div>`}</div>`;
+}
+
+/* ===================== PROPERTIES ===================== */
+function vProps(){
+  const f=UI.props,q=f.q.toLowerCase();
+  const rows=D.properties.filter(p=>(f.f==='active'?['Draft','Live','Under offer'].includes(p.status):f.f==='all'?true:p.purpose===f.f)
+    &&(!q||[p.title,p.ref,p.building,p.community].join(' ').toLowerCase().includes(q))).sort((a,b)=>(b.created_at||'').localeCompare(a.created_at||''));
+  return `<div class="head"><h1>Properties</h1><button class="btn pri" data-a="new" data-t="properties">+ Add property</button></div>
+  <div class="filters"><input id="qProps" type="search" placeholder="Search title, building or community" value="${esc(f.q)}" aria-label="Search properties">
+  <div class="chipset">${[['active','Available'],['Sale','Sale'],['Rent','Rent'],['Off-plan','Off-plan'],['all','All']].map(([k,n])=>`<button data-a="pf" data-v="${k}" class="${f.f===k?'on':''}">${n}</button>`).join('')}</div></div>
+  <div class="card pad">${rows.length?rows.map(p=>{const s=permit(p);return `<div class="row" data-a="open" data-t="properties" data-id="${p.id}"><div class="main"><div class="t">${esc(p.title)}</div><div class="s">${esc([p.community,p.beds?(p.beds==='Studio'?'Studio':p.beds+' BR'):'',p.purpose].filter(Boolean).join(' · '))}</div></div><div class="r"><div class="num">${aed(p.price,1)}${p.purpose==='Rent'?'/yr':''}</div>${pill(p.status)} ${s&&s.c!=='good'?pill(s.t,s.c):''}</div></div>`}).join(''):`<div class="empty">${D.properties.length?'No properties match.':'No properties yet. Add the listings you sell or let for owners, and off-plan units.'}</div>`}</div>`;
+}
+
+/* ===================== DEALS ===================== */
+function vDeals(){
+  const f=UI.deals;const ds=D.deals.filter(d=>(!f.f||d.type===f.f)&&(!f.mine||d.broker===me.id));
+  const st=L.stages.filter(s=>s!=='Lost');const lost=ds.filter(d=>d.stage==='Lost').length;
+  return `<div class="head"><h1>Deals</h1><button class="btn pri" data-a="new" data-t="deals">+ Add deal</button></div>
+  <div class="filters"><div class="chipset">${[['','All'],['Sale','Sales'],['Rental','Rentals'],['Off-plan','Off-plan']].map(([k,n])=>`<button data-a="df" data-v="${k}" class="${f.f===k?'on':''}">${n}</button>`).join('')}<button data-a="dm" class="${f.mine?'on':''}">Mine</button></div></div>
+  <div class="board">${st.map(s=>{const cs=ds.filter(d=>d.stage===s);return `<div class="col"><div class="col-h">${s} · ${cs.length}<span>${esc(STAGE_HINT[s])}</span></div>${cs.map(d=>`<div class="deal" data-a="open" data-t="deals" data-id="${d.id}"><div class="t">${esc(d.title)}</div><div class="s">${esc(cName(d.contact_id))}</div><div class="s num">${aed(d.value,1)}</div><div class="c num">${aed(comm(d).net,1)} commission</div></div>`).join('')||'<div class="s howto" style="padding:0 4px">—</div>'}</div>`}).join('')}</div>
+  ${lost?`<p class="howto">${lost} lost deal${lost>1?'s':''} hidden.</p>`:''}`;
+}
+
+/* ===================== TEAM (admin) ===================== */
+function vTeam(){
+  return `<div class="head"><div><h1>Team & access</h1><div class="sub">Who can sign in to the CRM.</div></div></div>
+  <div class="card pad" style="overflow-x:auto"><table class="team"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Access</th></tr></thead><tbody>
+  ${D.profiles.sort((a,b)=>(a.full_name||'').localeCompare(b.full_name||'')).map(p=>`<tr><td><input value="${esc(p.full_name)}" data-a="pname" data-id="${p.id}" aria-label="Name" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px;width:100%;min-width:140px"></td><td>${esc(p.email)}</td>
+  <td><select data-a="prole" data-id="${p.id}" ${p.id===me.id?'disabled':''} aria-label="Role"><option value="broker" ${p.role==='broker'?'selected':''}>Broker</option><option value="admin" ${p.role==='admin'?'selected':''}>Admin</option></select></td>
+  <td>${p.id===me.id?'You':`<button class="btn sm ${p.active?'danger':''}" data-a="pactive" data-id="${p.id}">${p.active?'Turn off access':'Turn on access'}</button>`}</td></tr>`).join('')}</tbody></table></div>
+  <div class="card pad howto" style="margin-top:14px"><h2 style="color:var(--ink);margin-bottom:4px">Adding a broker</h2><ol>
+  <li>Open your Supabase project → <b>Authentication</b> → <b>Users</b>.</li>
+  <li>Click <b>Add user → Send invitation</b> and enter their email (ideally name@plotmark.ae).</li>
+  <li>They get an email, click the link, and choose their own password here.</li>
+  <li>They then appear in this list. Set their name and role.</li></ol>
+  <p>When someone leaves, click <b>Turn off access</b>. Their leads and deals stay in the CRM.</p></div>`;
+}
+
+/* ===================== RECORD SHEET ===================== */
+function openSheet(t,id){sheet={mode:'view',t,id,confirm:false};drawSheet()}
+function closeSheet(){sheet=null;$('#sheet').hidden=true;$('#veil').hidden=true;document.body.style.overflow=''}
+function shell(title,sub,chips,acts,body){
+  return `<div class="sh-h"><div class="sh-top"><div style="flex:1;min-width:0"><h2>${esc(title)}</h2>${sub?`<div class="howto">${sub}</div>`:''}</div><button class="btn sm ghost" data-a="close" aria-label="Close">✕</button></div>${chips?`<div class="acts">${chips}</div>`:''}${acts?`<div class="acts">${acts}</div>`:''}</div><div class="sh-b">${body}</div>`;
+}
+function dl(pairs){return '<dl class="dl">'+pairs.filter(p=>p&&p[1]).map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join('')+'</dl>'}
+const lnk=(t,id,txt)=>id?`<a href="#" data-a="open" data-t="${t}" data-id="${id}">${esc(txt)}</a>`:'';
+function delBtn(){if(!isAdmin())return '';return sheet.confirm?`<span class="confirm">Delete for good? <button class="btn sm danger" data-a="delyes">Delete</button><button class="btn sm" data-a="delno">Keep</button></span>`:`<button class="btn sm ghost danger" data-a="del">Delete</button>`}
+function pre(o){return esc(JSON.stringify(o))}
+
+function drawSheet(){
+  const el=$('#sheet');$('#veil').hidden=false;el.hidden=false;document.body.style.overflow='hidden';
+  if(sheet.mode==='form'){drawForm();return}
+  const {t,id}=sheet,r=byId(t,id);
+  if(!r){el.innerHTML=shell('Not found','It may have been deleted.','','','');return}
+  const keep=el.querySelector('#noteBox')?.value||'';const sc=el.querySelector('.sh-b')?.scrollTop||0;
+  let h='';
+  if(t==='contacts'){
+    const acts=D.activities.filter(a=>a.contact_id===id);
+    const deals=D.deals.filter(d=>d.contact_id===id),vws=D.viewings.filter(v=>v.contact_id===id).sort((a,b)=>b.starts_at.localeCompare(a.starts_at)),tks=D.tasks.filter(x=>x.contact_id===id&&!x.done),owned=D.properties.filter(p=>p.owner_id===id);
+    const dtype=r.purpose==='Rent'||r.purpose==='Let'?'Rental':r.purpose==='Off-plan'?'Off-plan':'Sale';
+    let body='';
+    if(r.phone||r.email)body+=`<div class="contact-btns">${r.phone?`<a class="btn" href="tel:${esc(tel(r.phone))}">Call</a><a class="btn" href="https://wa.me/${esc(tel(r.phone).replace('+',''))}" target="_blank" rel="noopener">WhatsApp</a>`:''}${r.email?`<a class="btn" href="mailto:${esc(r.email)}">Email</a>`:''}</div>`;
+    body+=`<div class="stack"><h3>Status</h3><div class="steps">${L.status.map(s=>`<button class="${s===r.status?'on':''} ${s==='Lost'?'lost':''}" data-a="cstatus" data-v="${s}">${s}</button>`).join('')}</div></div>`;
+    body+=`<div class="note"><h3>Add a note</h3><textarea id="noteBox" placeholder="e.g. Called. Wants 2BR in Marina under 2.5M. Viewing Saturday.">${esc(keep)}</textarea><div class="acts">${['Call','WhatsApp','Email','Meeting','Note'].map(k=>`<button class="btn sm" data-a="log" data-k="${k}">${k==='Note'?'Save note':'Log '+(k==='WhatsApp'?k:k.toLowerCase())}</button>`).join('')}</div></div>`;
+    body+=dl([['Phone',esc(r.phone)],['Email',esc(r.email)],['Budget / asking',r.budget?aed(r.budget):''],['Bedrooms',r.beds&&r.beds!=='Any'?esc(r.beds):''],['Communities',esc((r.communities||[]).join(', '))],['Source',esc(r.source)],['Broker',esc(person(r.broker))],['Next follow-up',esc(fDate(r.next_step))],['KYC',esc(r.kyc)],['Nationality',esc(r.nationality)],['Added',esc(ago(r.created_at))]]);
+    if(r.notes)body+=`<div><h3>Notes</h3><div style="white-space:pre-wrap">${esc(r.notes)}</div></div>`;
+    if(['Buy','Rent','Off-plan'].includes(r.purpose)){const m=matchFor(r);body+=`<div><h3>Matching properties</h3>${m.length?m.map(x=>`<div class="row" data-a="open" data-t="properties" data-id="${x.p.id}"><div class="main"><div class="t">${esc(x.p.title)}</div><div class="s">${esc(x.p.community)} · ${aed(x.p.price,1)}</div></div><div class="r">${x.hit.map(k=>`<span class="tag ok">${k}</span>`).join(' ')}</div></div>`).join(''):'<div class="empty">No available listings match yet.</div>'}</div>`}
+    if(owned.length)body+=`<div><h3>Their properties</h3>${owned.map(p=>`<div class="row" data-a="open" data-t="properties" data-id="${p.id}"><div class="main"><div class="t">${esc(p.title)}</div></div><div class="r">${pill(p.status)}</div></div>`).join('')}</div>`;
+    if(deals.length)body+=`<div><h3>Deals</h3>${deals.map(d=>`<div class="row" data-a="open" data-t="deals" data-id="${d.id}"><div class="main"><div class="t">${esc(d.title)}</div><div class="s">${aed(d.value,1)}</div></div><div class="r">${pill(d.stage)}</div></div>`).join('')}</div>`;
+    if(vws.length)body+=`<div><h3>Viewings</h3>${vws.map(viewRow).join('')}</div>`;
+    if(tks.length)body+=`<div><h3>Open tasks</h3>${tks.map(taskRow).join('')}</div>`;
+    body+=`<div><h3>History</h3>${acts.length?acts.map(a=>`<div class="ev"><div class="k"><b>${esc(a.kind)}</b>${esc(ago(a.created_at))}</div><div><div style="white-space:pre-wrap">${esc(a.body)}</div><div class="howto">${esc(person(a.created_by)||(a.kind==='Website enquiry'?'plotmark.ae':''))}</div></div></div>`).join(''):'<div class="empty">Nothing logged yet.</div>'}</div>`;
+    h=shell(r.name,esc([r.purpose,r.source].filter(Boolean).join(' · ')),pill(r.status)+(r.kyc!=='Done'?pill('KYC: '+r.kyc):pill('KYC done','good')),
+      `<button class="btn sm" data-a="edit">Edit</button><button class="btn sm" data-a="new" data-t="viewings" data-p="${pre({contact_id:id})}">Book viewing</button><button class="btn sm" data-a="new" data-t="tasks" data-p="${pre({contact_id:id,due:addDays(1)})}">Add task</button><button class="btn sm" data-a="new" data-t="deals" data-p="${pre({contact_id:id,type:dtype,title:(r.purpose||'Deal')+' – '+r.name})}">Start deal</button>${['Sell','Let'].includes(r.purpose)?`<button class="btn sm" data-a="new" data-t="properties" data-p="${pre({owner_id:id,purpose:r.purpose==='Let'?'Rent':'Sale'})}">Add their property</button>`:''}${delBtn()}`,body);
+  }
+  if(t==='properties'){
+    const s=permit(r),m=matchLeads(r),vws=D.viewings.filter(v=>v.property_id===id).sort((a,b)=>b.starts_at.localeCompare(a.starts_at));
+    let body=dl([['Price',aed(r.price)+(r.purpose==='Rent'?' a year':'')],['Price per sq ft',r.size_sqft&&r.purpose!=='Rent'?aed(r.price/r.size_sqft):''],['Community',esc(r.community)],['Building',esc(r.building)],['Type',esc(r.type)],['Bedrooms',esc(r.beds)],['Size',r.size_sqft?esc((+r.size_sqft).toLocaleString('en-US'))+' sq ft':''],['Owner',lnk('contacts',r.owner_id,cName(r.owner_id))],['Developer',esc(r.developer)],['Trakheesi permit',esc(r.permit)],['Permit expiry',esc(fDate(r.permit_expiry))],['Listing broker',esc(person(r.broker))],['Reference',esc(r.ref)]]);
+    if(r.notes)body+=`<div><h3>Notes</h3><div style="white-space:pre-wrap">${esc(r.notes)}</div></div>`;
+    body+=`<div><h3>Leads who may want it</h3>${m.length?m.map(x=>`<div class="row" data-a="open" data-t="contacts" data-id="${x.c.id}"><div class="main"><div class="t">${esc(x.c.name)}</div><div class="s">${esc(x.c.status)}${x.c.budget?' · budget '+aed(x.c.budget,1):''}</div></div><div class="r">${x.hit.map(k=>`<span class="tag ok">${k}</span>`).join(' ')}</div></div>`).join(''):'<div class="empty">No open leads match yet.</div>'}</div>`;
+    if(vws.length)body+=`<div><h3>Viewings</h3>${vws.map(viewRow).join('')}</div>`;
+    h=shell(r.title,esc([r.purpose,r.community].join(' · ')),pill(r.status)+(s?pill(s.t,s.c):'')+(r.purpose!=='Off-plan'?pill(r.form_a?'Form A signed':'Form A missing',r.form_a?'good':'warn'):''),
+      `<button class="btn sm" data-a="edit">Edit</button><button class="btn sm" data-a="new" data-t="viewings" data-p="${pre({property_id:id})}">Book viewing</button>${delBtn()}`,body);
+  }
+  if(t==='deals'){
+    const c=comm(r);
+    let body=`<div class="stack"><h3>Stage</h3><div class="steps">${L.stages.map(s=>`<button class="${s===r.stage?'on':''} ${s==='Lost'?'lost':''}" data-a="dstage" data-v="${s}">${s}</button>`).join('')}</div><div class="howto">${esc(STAGE_HINT[r.stage])}</div></div>`;
+    body+=`<div class="card pad calc num"><span>Deal value</span><span>${aed(r.value)}</span><span>Commission at ${c.pct}%</span><span>${aed(c.gross)}</span>${c.share?`<span>Other agency (${+r.split_pct}%)</span><span>− ${aed(c.share)}</span>`:''}<span class="tot">Plotmark earns</span><span class="tot">${aed(c.net)}</span><span class="howto" style="grid-column:1/-1">Before VAT.</span></div>`;
+    body+=dl([['Client',lnk('contacts',r.contact_id,cName(r.contact_id))],['Property',lnk('properties',r.property_id,pName(r.property_id))],['Broker',esc(person(r.broker))],['Expected close',esc(fDate(r.expected_close))],['Closed',r.closed_at?esc(fDate(r.closed_at)):'' ]]);
+    if(r.notes)body+=`<div><h3>Notes</h3><div style="white-space:pre-wrap">${esc(r.notes)}</div></div>`;
+    const tks=D.tasks.filter(x=>x.deal_id===id);if(tks.length)body+=`<div><h3>Tasks</h3>${tks.map(taskRow).join('')}</div>`;
+    h=shell(r.title,esc(r.type)+' · '+aed(r.value),pill(r.stage),`<button class="btn sm" data-a="edit">Edit</button><button class="btn sm" data-a="new" data-t="tasks" data-p="${pre({deal_id:id,contact_id:r.contact_id,due:addDays(1)})}">Add task</button>${delBtn()}`,body);
+  }
+  if(t==='viewings'){
+    const d=new Date(r.starts_at);
+    h=shell('Viewing',esc(d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}))+', '+fTime(r.starts_at),pill(r.status),
+      (r.status==='Scheduled'?`<button class="btn sm pri" data-a="vst" data-v="Done">Mark done</button><button class="btn sm" data-a="vst" data-v="No-show">No-show</button><button class="btn sm" data-a="vst" data-v="Cancelled">Cancel</button>`:'')+`<button class="btn sm" data-a="edit">Edit</button>${delBtn()}`,
+      dl([['Client',lnk('contacts',r.contact_id,cName(r.contact_id))],['Property',lnk('properties',r.property_id,pName(r.property_id))],['Broker',esc(person(r.broker))]])+`<div><h3>Client feedback</h3>${r.feedback?`<div style="white-space:pre-wrap">${esc(r.feedback)}</div>`:'<div class="empty">None yet. Tap Edit after the viewing to add it.</div>'}</div>`);
+  }
+  if(t==='tasks'){
+    h=shell(r.title,r.due?'Due '+esc(fDate(r.due)):'',pill(r.done?'Done':(r.due&&r.due<today()?'Overdue':'Open'),r.done?'good':(r.due&&r.due<today()?'bad':'info')),
+      `<button class="btn sm pri" data-a="tick" data-id="${r.id}">${r.done?'Reopen':'Mark done'}</button><button class="btn sm" data-a="edit">Edit</button>${delBtn()}`,
+      dl([['Client',lnk('contacts',r.contact_id,cName(r.contact_id))],['Deal',lnk('deals',r.deal_id,byId('deals',r.deal_id)?.title||'')],['Assigned to',esc(person(r.broker))]])+(r.notes?`<div><h3>Notes</h3><div style="white-space:pre-wrap">${esc(r.notes)}</div></div>`:''));
+  }
+  el.innerHTML=h;const b=el.querySelector('.sh-b');if(b)b.scrollTop=sc;
+}
+function matchFor(c){const want={Buy:'Sale',Rent:'Rent','Off-plan':'Off-plan'}[c.purpose];
+  return D.properties.filter(p=>p.purpose===want&&['Live','Draft'].includes(p.status)).map(p=>{const hit=[];let s=0;
+    if(c.budget){if(+p.price<=+c.budget*1.05){hit.push('Budget');s++}else return null}
+    if(c.beds&&c.beds!=='Any'&&p.beds===c.beds){hit.push('Beds');s++}
+    if((c.communities||[]).includes(p.community)){hit.push('Area');s++}
+    return {p,hit,s}}).filter(Boolean).sort((a,b)=>b.s-a.s).slice(0,6)}
+function matchLeads(p){const want={Sale:'Buy',Rent:'Rent','Off-plan':'Off-plan'}[p.purpose];
+  return D.contacts.filter(c=>openLead(c)&&c.purpose===want).map(c=>{const hit=[];let s=0;
+    if(c.budget){if(+p.price<=+c.budget*1.05){hit.push('Budget');s++}else return null}
+    if(c.beds&&c.beds!=='Any'&&p.beds===c.beds){hit.push('Beds');s++}
+    if((c.communities||[]).includes(p.community)){hit.push('Area');s++}
+    return {c,hit,s}}).filter(Boolean).sort((a,b)=>b.s-a.s).slice(0,6)}
+
+/* ===================== FORMS ===================== */
+function openForm(t,rec,preset){sheet={mode:'form',t,id:rec?.id||null,vals:Object.assign({},rec||{},preset||{}),fresh:!rec};drawSheet()}
+function brokerOpts(v){return `<option value="">Unassigned</option>`+D.profiles.filter(p=>p.active||p.id===v).map(p=>`<option value="${p.id}" ${p.id===v?'selected':''}>${esc(p.full_name||p.email)}${p.id===me.id?' (me)':''}</option>`).join('')}
+function fld(f,v){
+  const id='f_'+f.k,req=f.req?' <b>*</b>':'';let i='';
+  if(f.t==='select')i=`<select id="${id}" name="${f.k}">${!v&&f.req?'<option value="">Choose…</option>':''}${!f.req&&!f.def?'<option value=""></option>':''}${f.o.map(o=>`<option ${o===v?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  else if(f.t==='textarea')i=`<textarea id="${id}" name="${f.k}">${esc(v)}</textarea>`;
+  else if(f.t==='multi')i=`<div class="boxes" id="${id}">${f.o.map(o=>`<label><input type="checkbox" name="${f.k}" value="${esc(o)}" ${(v||[]).includes(o)?'checked':''}>${esc(o)}</label>`).join('')}</div>`;
+  else if(f.t==='check')return `<div class="fld ckline ${f.wide?'wide':''}"><input type="checkbox" id="${id}" name="${f.k}" ${v?'checked':''}><label for="${id}" style="color:var(--ink)">${esc(f.l)}</label></div>`;
+  else if(f.t==='broker')i=`<select id="${id}" name="${f.k}">${brokerOpts(v)}</select>`;
+  else if(f.t==='ref'){const rs=[...D[f.ref]].sort((a,b)=>String(a.name||a.title).localeCompare(String(b.name||b.title)));
+    i=`<select id="${id}" name="${f.k}"><option value="">${f.req?'Choose…':'None'}</option>${rs.map(r=>`<option value="${r.id}" ${r.id===v?'selected':''}>${esc(r.name||r.title)}${f.ref==='properties'&&r.community?' · '+esc(r.community):''}</option>`).join('')}</select>`}
+  else{const val=f.t==='datetime-local'&&v?toLocalInput(v):v;i=`<input id="${id}" name="${f.k}" type="${f.t}" value="${esc(val)}"${f.t==='number'?' min="0" inputmode="decimal"':''}${f.step?` step="${f.step}"`:''}${f.ph?` placeholder="${esc(f.ph)}"`:''}>`}
+  return `<div class="fld ${f.wide||f.t==='multi'?'wide':''}"><label for="${id}">${esc(f.l)}${req}</label>${i}${f.hint?`<span class="hint">${esc(f.hint)}</span>`:''}</div>`;
+}
+function drawForm(){
+  const {t,vals,fresh}=sheet,F=FORMS[t];
+  if(fresh){[...F.main,...F.more].forEach(f=>{if(vals[f.k]==null&&f.def)vals[f.k]=f.def});if(vals.broker==null)vals.broker=me.id;
+    if(t==='viewings'&&!vals.starts_at){const d=new Date();d.setDate(d.getDate()+1);d.setHours(11,0,0,0);vals.starts_at=d.toISOString()}
+    if(t==='tasks'&&!vals.due)vals.due=today()}
+  const openMore=!fresh&&F.more.some(f=>vals[f.k]&&!(f.def&&vals[f.k]===f.def)&&!(f.k==='broker'))||sheet.openMore;
+  $('#sheet').innerHTML=shell((fresh?'New ':'Edit ')+NAME[t],'','','',`<form class="f" id="theForm" novalidate>${F.main.map(f=>fld(f,vals[f.k])).join('')}
+   <details class="more" ${openMore?'open':''}><summary>More details</summary><div class="in">${F.more.map(f=>fld(f,vals[f.k])).join('')}</div></details>
+   <div class="f-foot"><span class="err" id="fErr" role="alert"></span><span class="acts"><button type="button" class="btn" data-a="${fresh?'close':'back'}">Cancel</button><button class="btn pri" id="fSave" type="submit">${fresh?'Add '+NAME[t]:'Save'}</button></span></div></form>`);
+  if(t==='deals'){const ty=$('#f_type'),cp=$('#f_comm_pct');const s=()=>{cp.placeholder='Usually '+(DEF_COMM[ty.value]||2)+'%'};ty.onchange=s;s()}
+  setTimeout(()=>{const x=$('#theForm input:not([type=checkbox]),#theForm select');if(x&&fresh)x.focus()},50);
+}
+document.addEventListener('submit',async e=>{
+  if(e.target.id!=='theForm')return;e.preventDefault();
+  const f=e.target,{t}=sheet,F=FORMS[t],err=$('#fErr'),btn=$('#fSave'),data={};
+  for(const s of [...F.main,...F.more]){
+    if(s.t==='multi')data[s.k]=[...f.querySelectorAll(`input[name="${s.k}"]:checked`)].map(i=>i.value);
+    else if(s.t==='check')data[s.k]=f.querySelector(`[name="${s.k}"]`).checked;
+    else{let v=f.querySelector(`[name="${s.k}"]`).value.trim();
+      if(s.t==='number')v=v===''?null:Math.max(0,+v);
+      else if(s.t==='datetime-local')v=v?new Date(v).toISOString():null;
+      else if(v==='')v=null;
+      data[s.k]=v}
+    if(s.req&&(data[s.k]==null||data[s.k]==='')){err.textContent='Please fill in “'+s.l+'”.';const x=f.querySelector(`[name="${s.k}"]`);x&&x.focus();return}
+  }
+  if(t==='contacts'&&data.email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email)){err.textContent='Check the email address.';return}
+  if(t==='properties'&&data.status==='Live'&&data.purpose!=='Off-plan'&&!data.permit){err.textContent='Add the Trakheesi permit number (under More details) before setting it Live.';f.querySelector('details').open=true;$('#f_permit').focus();return}
+  if(t==='properties'&&data.status==='Live'&&data.permit_expiry&&data.permit_expiry<today()){err.textContent='The permit has expired. Renew it before setting the listing Live.';return}
+  btn.disabled=true;err.textContent='';
+  try{const r=await save(t,sheet.id,data);toast(sheet.fresh?NAME[t][0].toUpperCase()+NAME[t].slice(1)+' added':'Saved');
+    if(['contacts','properties','deals'].includes(t))sheet={mode:'view',t,id:r.id,confirm:false};
+    else if(sheet.back)sheet=sheet.back;else if(!sheet.fresh)sheet={mode:'view',t,id:r.id,confirm:false};else{closeSheet()}
+    render();if(sheet)drawSheet()}
+  catch(x){btn.disabled=false;err.textContent=friendly(x)}
+});
+
+/* ===================== CLICKS ===================== */
+document.addEventListener('click',async e=>{
+  const who=e.target.closest('#whoBtn');if(who){const m=$('#whoMenu');m.hidden=!m.hidden;who.setAttribute('aria-expanded',String(!m.hidden));return}
+  if(!e.target.closest('.who'))$('#whoMenu').hidden=true;
+  if(e.target.id==='veil'){closeSheet();return}
+  if(e.target.id==='fab'){openAddMenu();return}
+  const a=e.target.closest('[data-a]');if(!a)return;const k=a.dataset.a;
+  if(a.tagName==='A'&&k==='open')e.preventDefault();
+  try{
+    if(k==='open'){if(e.target.closest('input.check'))return;const back=sheet&&sheet.mode==='view'?{...sheet}:null;openSheet(a.dataset.t,a.dataset.id)}
+    else if(k==='close')closeSheet();
+    else if(k==='back'){sheet={mode:'view',t:sheet.t,id:sheet.id,confirm:false};drawSheet()}
+    else if(k==='new'){const back=sheet&&sheet.mode==='view'?{...sheet,confirm:false}:null;openForm(a.dataset.t,null,a.dataset.p?JSON.parse(a.dataset.p):null);if(back&&['viewings','tasks'].includes(a.dataset.t))sheet.back=back}
+    else if(k==='edit'){openForm(sheet.t,byId(sheet.t,sheet.id))}
+    else if(k==='del'){sheet.confirm=true;drawSheet()}
+    else if(k==='delno'){sheet.confirm=false;drawSheet()}
+    else if(k==='delyes'){await remove(sheet.t,sheet.id);closeSheet();render();toast('Deleted')}
+    else if(k==='tick'){const x=byId('tasks',a.dataset.id);await save('tasks',x.id,{done:!x.done,done_at:!x.done?new Date().toISOString():null});render();if(!x.done)toast('Done ✓')}
+    else if(k==='cstatus'){await save('contacts',sheet.id,{status:a.dataset.v});render()}
+    else if(k==='dstage'){await save('deals',sheet.id,{stage:a.dataset.v});render();if(a.dataset.v==='Won')toast('Deal won. Well done!')}
+    else if(k==='vst'){await save('viewings',sheet.id,{status:a.dataset.v});render();if(a.dataset.v==='Done'){openForm('viewings',byId('viewings',sheet.id));sheet.openMore=true;drawSheet();toast('Add the client’s feedback')}}
+    else if(k==='log'){const box=$('#noteBox'),txt=box.value.trim();if(!txt){box.focus();toast('Write a short note first.');return}
+      a.disabled=true;const r=await sb.from('activities').insert({contact_id:sheet.id,kind:a.dataset.k,body:txt}).select().single();if(r.error)throw r.error;D.activities.unshift(r.data);box.value='';
+      const c=byId('contacts',sheet.id),up={last_contact:new Date().toISOString()};if(c.status==='New')up.status='Contacted';await save('contacts',c.id,up);render();toast('Saved to history')}
+    else if(k==='lf'){UI.leads.f=a.dataset.v;render()}
+    else if(k==='pf'){UI.props.f=a.dataset.v;render()}
+    else if(k==='df'){UI.deals.f=a.dataset.v;render()}
+    else if(k==='dm'){UI.deals.mine=!UI.deals.mine;render()}
+    else if(k==='pactive'){const p=byId('profiles',a.dataset.id);await save('profiles',p.id,{active:!p.active});render();toast(p.active?'Access turned off':'Access turned on')}
+    else if(k==='refresh'){await refresh();toast('Up to date')}
+    else if(k==='myname'){$('#whoMenu').hidden=true;openNameForm()}
+    else if(k==='signout'){await sb.auth.signOut()}
+    else if(k==='addpick'){openForm(a.dataset.t)}
+  }catch(x){a.disabled=false;toast(friendly(x))}
+});
+document.addEventListener('change',async e=>{
+  const a=e.target.dataset&&e.target.dataset.a;
+  try{
+    if(a==='prole'){await save('profiles',e.target.dataset.id,{role:e.target.value});toast('Role updated')}
+    if(a==='pname'){await save('profiles',e.target.dataset.id,{full_name:e.target.value.trim()});toast('Name updated');render()}
+  }catch(x){toast(friendly(x));render()}
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='qLeads'){UI.leads.q=e.target.value;const tmp=document.createElement('div');tmp.innerHTML=vLeads();$('#leadList').innerHTML=tmp.querySelector('#leadList').innerHTML}
+  if(e.target.id==='qProps'){UI.props.q=e.target.value;const pos=e.target.selectionStart;render();const i=$('#qProps');i.focus();i.setSelectionRange(pos,pos)}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(sheet)closeSheet();$('#whoMenu').hidden=true}});
+function openAddMenu(){
+  sheet={mode:'view',t:'_add'};$('#veil').hidden=false;const el=$('#sheet');el.hidden=false;
+  el.innerHTML=shell('Add new','','','',`<div class="stack">${[['contacts','Lead','Someone looking to buy, rent, sell or let'],['viewings','Viewing','Book a client to see a property'],['tasks','Task','A reminder for you or a broker'],['properties','Property','A listing you sell or let'],['deals','Deal','An offer or agreement in progress']].map(([t,n,s])=>`<button class="btn" style="justify-content:flex-start;text-align:left;padding:14px" data-a="addpick" data-t="${t}"><span><b>${n}</b><br><span class="howto">${s}</span></span></button>`).join('')}</div>`);
+}
+function openNameForm(){
+  sheet={mode:'view',t:'_me'};$('#veil').hidden=false;const el=$('#sheet');el.hidden=false;
+  el.innerHTML=shell('My name','','','',`<form class="f" id="nameForm"><div class="fld wide"><label for="myName">Full name</label><input id="myName" value="${esc(me.full_name)}"></div><div class="f-foot"><span></span><button class="btn pri">Save</button></div></form>`);
+  $('#nameForm').onsubmit=async ev=>{ev.preventDefault();try{me=await save('profiles',me.id,{full_name:$('#myName').value.trim()});closeSheet();render();toast('Saved')}catch(x){toast(friendly(x))}};
+}
+/* keep data fresh: on return to the tab, and every 2 minutes */
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&me&&Date.now()-loadedAt>30000)refresh(true)});
+setInterval(()=>{if(me&&document.visibilityState==='visible'&&!sheet)refresh(true)},120000);
+// patch: drawSheet must not run for helper sheets
+const _draw=drawSheet;drawSheet=function(){if(sheet&&sheet.t&&sheet.t.startsWith('_'))return;_draw()};
+</script>
+</body>
+</html>
