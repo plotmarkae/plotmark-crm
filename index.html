@@ -6,6 +6,12 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#2F2A25">
 <title>Plotmark CRM</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Plotmark">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 28'%3E%3Cpath d='M11 1C5.5 1 1 5.4 1 10.9 1 18.3 11 27 11 27s10-8.7 10-16.1C21 5.4 16.5 1 11 1z' fill='%23E8A33D'/%3E%3Crect x='7.5' y='7.5' width='7' height='7' fill='%232F2A25'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -76,7 +82,7 @@ a{color:inherit}
 .btn[disabled]{opacity:.5;cursor:default}
 
 /* shell */
-.top{position:sticky;top:0;z-index:20;background:rgba(247,242,238,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top{position:sticky;top:0;z-index:20;padding-top:env(safe-area-inset-top);background:rgba(247,242,238,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .top-in{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:12px 20px}
 .tabs{display:flex;gap:4px}
 .tabs a{padding:8px 14px;border-radius:9px;text-decoration:none;color:var(--muted);font-weight:500;font-size:14px}
@@ -147,7 +153,7 @@ main{max-width:1400px;margin:0 auto;padding:28px 32px 110px}
 /* sheet (record pages and forms) */
 .veil{position:fixed;inset:0;background:rgba(47,42,37,.35);z-index:40}
 .sheet{position:fixed;top:0;right:0;bottom:0;width:min(640px,100%);background:var(--paper);z-index:41;display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(47,42,37,.2)}
-.sh-h{background:var(--card);border-bottom:1px solid var(--line);padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.sh-h{background:var(--card);border-bottom:1px solid var(--line);padding:calc(14px + env(safe-area-inset-top)) 18px 14px;display:flex;flex-direction:column;gap:10px}
 .sh-top{display:flex;gap:10px;align-items:flex-start}
 .sh-top h2{font-size:19px;flex:1;min-width:0;overflow-wrap:anywhere}
 .sh-b{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:18px}
